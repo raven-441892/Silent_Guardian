@@ -97,8 +97,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   filled: true,
                   fillColor:
                   _isEmailValid ? Colors.white : Colors.grey.shade200,
-                  errorText: _passwordController.text.isEmpty ||
-                      _isPasswordValid
+                  errorText: _passwordController.text.isEmpty || _isPasswordValid
                       ? null
                   //allows special characters like ! @ # $ % ^ & * ( ) , . ? " : { } | < > _)
                       :'Password must be at least 8 characters long with \nalphabets, numbers'
@@ -116,8 +115,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         _passwordVisible = !_passwordVisible;
                       });
                     },
+                  ),
                 ),
-              ),
                 onChanged: (value) {
                   setState(() {
                     _isPasswordValid = _validatePassword(value);
@@ -134,11 +133,11 @@ class _SignInScreenState extends State<SignInScreen> {
                     // Add forgot password logic
                   },
                   child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                      ),
+                    'Forgot Password?',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ),
@@ -149,8 +148,22 @@ class _SignInScreenState extends State<SignInScreen> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Add sign-in logic
+                  onPressed: (_isEmailValid && _isPasswordValid)
+                      ? () {
+                    // ✅ Login allowed
+                    debugPrint("Login successful format-wise");
+                    // TODO: Call backend login API here
+                  }
+                      : () {
+                    // Show red warning
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Please enter a valid email and password',
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2196F3),
