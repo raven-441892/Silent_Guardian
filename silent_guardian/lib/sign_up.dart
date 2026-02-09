@@ -92,10 +92,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   setState(() {
                     _isEmailValid = _validateEmail(value);
                   });
-
-                  if (_isEmailValid) {
-                    FocusScope.of(context).requestFocus(_usernameFocusNode);
-                  }
                 },
               ),
               const SizedBox(height: 20),
