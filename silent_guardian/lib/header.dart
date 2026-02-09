@@ -1,4 +1,3 @@
-// lib/header.dart
 import 'package:flutter/material.dart';
 import 'sign_in.dart';
 
@@ -15,9 +14,9 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           Image.asset(
-              'assets/images/silent_guardian_logo.png',
-              width: 60,
-            ),
+            'assets/images/silent_guardian_logo.png',
+            width: 60,
+          ),
 
           const SizedBox(width: 8),
           const Text(

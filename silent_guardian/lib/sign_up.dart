@@ -11,13 +11,16 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  final FocusNode _usernameFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
 
   bool _isEmailValid = false;
+  bool _isUsernameValid = false;
   bool _isPasswordValid = false;
   bool _isConfirmPasswordValid = false;
 
@@ -28,6 +31,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return RegExp(
       r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
     ).hasMatch(email);
+  }
+
+  bool _validateUsername(String username) {
+    return username.length >= 3;
   }
 
   // Password validation: at least 8 chars, letters, numbers, special char
@@ -87,10 +94,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   });
 
                   if (_isEmailValid) {
+                    FocusScope.of(context).requestFocus(_usernameFocusNode);
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // USERNAME
+              TextField(
+                controller: _usernameController,
+                focusNode: _usernameFocusNode,
+                enabled: _isEmailValid,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  prefixIcon: const Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: _isEmailValid
+                      ? Colors.white
+                      : Colors.grey.shade200,
+                  errorText: _usernameController.text.isEmpty ||
+                      _isUsernameValid
+                      ? null
+                      : 'Username must be at least 3 characters',
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _isUsernameValid = _validateUsername(value);
+                  });
+                },
+                onSubmitted: (_) {
+                  if (_isUsernameValid) {
                     FocusScope.of(context).requestFocus(_passwordFocusNode);
                   }
                 },
               ),
+
               const SizedBox(height: 20),
 
               // Password Field
@@ -173,6 +215,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 },
               ),
               const SizedBox(height:20),
+
               // Sign Up Button
               SizedBox(
                 width: double.infinity,

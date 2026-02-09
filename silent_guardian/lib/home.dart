@@ -63,11 +63,11 @@ class HomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _HomeIcon(
-                    icon: Icons.phone,
-                    label: 'Fake Call',
-                    onTap: (){
+                  icon: Icons.phone,
+                  label: 'Fake Call',
+                  onTap: (){
 
-                    },
+                  },
                 )
               ],
             )
