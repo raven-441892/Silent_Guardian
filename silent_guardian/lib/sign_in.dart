@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'header.dart';
+import 'home.dart';
 import 'sign_up.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -149,11 +152,38 @@ class _SignInScreenState extends State<SignInScreen> {
                 height: 55,
                 child: ElevatedButton(
                   onPressed: (_isEmailValid && _isPasswordValid)
-                      ? () {
-                    // ✅ Login allowed
-                    debugPrint("Login successful format-wise");
-                    // TODO: Call backend login API here
+                      ? () async {
+                    try {
+                      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+
+                      // Check if email is verified
+                      if (userCredential.user!.emailVerified) {
+                        debugPrint("Login successful");
+                        // Navigate to Home
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please verify your email before logging in'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        await FirebaseAuth.instance.signOut();
+                      }
+
+                    } on FirebaseAuthException catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.message ?? 'Login failed')),
+                      );
+                    }
                   }
+
                       : () {
                     // Show red warning
                     ScaffoldMessenger.of(context).showSnackBar(

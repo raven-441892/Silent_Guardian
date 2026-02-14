@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'sign_in.dart';
+import 'dart:math';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final String email;
+  final String username;
+  final String generatedOtp;
+
+  const OtpScreen({super.key, required this.email, required this.username, required this.generatedOtp});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -13,6 +19,8 @@ class _OtpScreenState extends State<OtpScreen> {
 
   final List<FocusNode> _focusNodes =
   List.generate(6, (_) => FocusNode());
+
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -26,10 +34,32 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void _verifyOtp() {
-    String otp = _controllers.map((c) => c.text).join();
-    debugPrint("Entered OTP: $otp");
+    String enteredOtp = _controllers.map((c) => c.text).join();
+    if (enteredOtp == widget.generatedOtp) {
+      // OTP correct → go to login screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const SignInScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Incorrect OTP, try again'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
-    // TODO: connect with backend verification
+  void _resendOtp() {
+    setState(() {
+      // regenerate OTP
+      String newOtp = (100000 + (Random().nextInt(900000))).toString();
+      debugPrint("New OTP: $newOtp");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('OTP resent! Check console for now.')),
+      );
+    });
   }
 
   Widget _otpBox(int index) {
@@ -101,35 +131,29 @@ class _OtpScreenState extends State<OtpScreen> {
 
             const SizedBox(height: 40),
 
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _verifyOtp,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            _loading
+              ?const CircularProgressIndicator()
+              : SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _verifyOtp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Verify OTP",
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
-                child: const Text(
-                  "Verify OTP",
-                  style: TextStyle(fontSize: 16),
-                ),
               ),
-            ),
 
             const SizedBox(height: 20),
 
-            TextButton(
-              onPressed: () {
-                // TODO: resend OTP logic
-              },
-              child: const Text(
-                "Resend OTP",
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
+            TextButton(onPressed: _resendOtp, child: const Text("Resend OTP")),
           ],
         ),
       ),

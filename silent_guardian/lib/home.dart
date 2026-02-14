@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'header.dart';
+import 'emergency_contacts.dart';
+import 'emergency_message.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -17,19 +20,33 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // 🔲 ICON GRID
+            // ICON GRID
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _HomeIcon(
                   icon: Icons.people,
                   label: 'Emergency\nContacts',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EmergencyContactsScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _HomeIcon(
                   icon: Icons.message,
                   label: 'Emergency\nMessages',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EmergencyMessageScreen(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

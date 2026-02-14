@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'silent-guardian-64590.firebaseapp.com',
     storageBucket: 'silent-guardian-64590.firebasestorage.app',
   );
+
 }

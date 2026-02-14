@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "69259487835",
-    "project_id": "silent-guardian-64590",
-    "storage_bucket": "silent-guardian-64590.firebasestorage.app"
+    "project_number": "672468996352",
+    "project_id": "silent-guardian-97b32",
+    "storage_bucket": "silent-guardian-97b32.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:69259487835:android:9a14b02942372648466d7e",
+        "mobilesdk_app_id": "1:672468996352:android:5126e36e7b91040daba3e5",
         "android_client_info": {
           "package_name": "com.example.silent_guardian"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "672468996352-6qsi84fir4jtmqmatcuj6r2g1d666suv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.silent_guardian",
+            "certificate_hash": "a37e96d2359d4b67da82bfefe7b14b075a31479c"
+          }
+        },
+        {
+          "client_id": "672468996352-nf1c5kkgt7p9uhs1rtlg6ncmqkk2lbo7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBXQOnAahDdEvQ1UZKXMMzMIbXhXoioSmg"
+          "current_key": "AIzaSyBRHrkbaZ65xgHM4nKv14OtvSrK5zppw3E"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672468996352-nf1c5kkgt7p9uhs1rtlg6ncmqkk2lbo7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'header.dart';
-import 'otp_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -23,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isUsernameValid = false;
   bool _isPasswordValid = false;
   bool _isConfirmPasswordValid = false;
+  bool _loading = false;
 
   bool _passwordVisible = false;
   bool _confirmPasswordVisible = false;
@@ -47,6 +50,61 @@ class _SignUpScreenState extends State<SignUpScreen> {
   // Confirm password validation
   bool _validateConfirmPassword(String confirmPassword) {
     return confirmPassword == _passwordController.text;
+  }
+
+  // --- Generate OTP ---
+  String _generateOtp() {
+    return (Random().nextInt(900000) + 100000).toString(); // 6-digit
+  }
+
+  void _signUp() async {
+    if (!_isEmailValid || !_isUsernameValid || !_isPasswordValid || !_isConfirmPasswordValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all fields correctly'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      // Create user
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      await userCredential.user?.sendEmailVerification();
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user?.uid)
+          .set({
+        'username': _usernameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'createdAt': Timestamp.now(),
+      });
+
+      setState(() => _loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created! Please verify your email before login.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context);
+
+    } on FirebaseAuthException catch (e) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Signup failed')),
+      );
+    }
   }
 
   @override
@@ -213,40 +271,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height:20),
 
               // Sign Up Button
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_isEmailValid && _isPasswordValid && _isConfirmPasswordValid) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const OtpScreen(),
+              _loading
+                  ? const CircularProgressIndicator()
+                  :SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _signUp,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2196F3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please fill all fields correctly'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Create New Account',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Create New Account',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 30),
             ],
           ),
