@@ -2,9 +2,34 @@ import 'package:flutter/material.dart';
 import 'header.dart';
 import 'emergency_contacts.dart';
 import 'emergency_message.dart';
+import 'silent_panic_trigger.dart';
+import 'package:silent_guardian/volume_listener_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  final VolumeListenerService _volumeService = VolumeListenerService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening after build
+    Future.microtask(() {
+      _volumeService.startListening(context);
+    });
+  }
+
+  @override
+  void dispose() {
+    _volumeService.dispose(); // if you added dispose()
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +86,12 @@ class HomeScreen extends StatelessWidget {
                   icon: Icons.notifications_off,
                   label: 'Silent\nPanic Trigger',
                   onTap: () {
-                    // Panic mode later
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SilentPanicTriggerScreen(),
+                      ),
+                    );
                   },
                 ),
                 _HomeIcon(
