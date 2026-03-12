@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'volume_listener_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,6 +10,9 @@ void main() async {
       // options: DefaultFirebaseOptions.currentPlatform,
   await Firebase.initializeApp();
   //}
+
+  VolumeListenerService();
+
   runApp(const SilentGuardianApp());
 }
 

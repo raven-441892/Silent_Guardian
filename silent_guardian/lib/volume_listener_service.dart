@@ -1,115 +1,60 @@
-import 'package:flutter/material.dart';
-import 'package:volume_controller/volume_controller.dart';
-import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
 
 class VolumeListenerService {
+  static const MethodChannel _channel = MethodChannel('volume_channel');
 
-  List<String> savedSequence = ["MAX", "MIN", "MAX"]; // temporary
+  List<String> savedSequence = ["MAX", "MIN", "MAX"]; // Later load from storage
   List<String> currentInput = [];
 
-  double? _previousVolume;
+  VolumeListenerService() {
+    _startListening();
+  }
 
-  void startListening(BuildContext context) async {
-
-    VolumeController.instance.showSystemUI = false;
-
-    _previousVolume = await VolumeController.instance.getVolume();
-
-    VolumeController.instance.addListener((volume) {
-
-      if (_previousVolume == null) return;
-
-      if (volume > _previousVolume!) {
-        _registerStep("MAX", context);
-      } else if (volume < _previousVolume!) {
-        _registerStep("MIN", context);
+  void _startListening() {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == "volumeUp") {
+        _registerStep("MAX");
+      } else if (call.method == "volumeDown") {
+        _registerStep("MIN");
       }
-
-      _previousVolume = volume;
     });
   }
 
-  void _registerStep(String step, BuildContext context) {
-
+  void _registerStep(String step) {
     currentInput.add(step);
 
-    // Keep last 5 presses
     if (currentInput.length > 5) {
       currentInput.removeAt(0);
     }
 
-    debugPrint("Current Input: $currentInput");
+    print("Current Input: $currentInput");
 
-    _checkSequence(context);
+    _checkSequence();
   }
 
-  void _checkSequence(BuildContext context) {
-
+  void _checkSequence() {
     if (currentInput.length < savedSequence.length) return;
 
-    List<String> lastInput =
+    final lastInput =
     currentInput.sublist(currentInput.length - savedSequence.length);
 
-    if (lastInput.toString() == savedSequence.toString()) {
-      _triggerCountdown(context);
+    if (const ListEquality().equals(lastInput, savedSequence)) {
+      _triggerEmergency();
     }
   }
 
-  void _triggerCountdown(BuildContext context) {
 
-    int seconds = 3;
-    Timer? timer;
+  void _triggerEmergency() {
+    print("EMERGENCY TRIGGERED");
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-
-        timer = Timer.periodic(const Duration(seconds: 1), (t) {
-          if (seconds == 0) {
-            t.cancel();
-            Navigator.pop(context);
-            _triggerEmergency(context);
-          } else {
-            seconds--;
-          }
-        });
-
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text("Emergency Triggered!"),
-              content: Text("Sending alert in $seconds seconds..."),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    timer?.cancel();
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Cancel"),
-                )
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _triggerEmergency(BuildContext context) {
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(" Emergency Alert Sent (Simulation)"),
-        backgroundColor: Colors.red,
-      ),
-    );
+    // TODO:
+    // - Start countdown activity
+    // - Send SMS
+    // - Trigger backend
+    // - Send notification
 
     currentInput.clear();
   }
-
-  void dispose() {
-    VolumeController.instance.removeListener();
-  }
-
 }

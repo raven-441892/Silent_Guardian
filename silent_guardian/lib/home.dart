@@ -4,6 +4,7 @@ import 'emergency_contacts.dart';
 import 'emergency_message.dart';
 import 'silent_panic_trigger.dart';
 import 'package:silent_guardian/volume_listener_service.dart';
+import 'accessibility_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,40 +12,75 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-
-  final VolumeListenerService _volumeService = VolumeListenerService();
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  bool _accessibilityEnabled = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Start listening after build
-    Future.microtask(() {
-      _volumeService.startListening(context);
+    WidgetsBinding.instance.addObserver(this);
+
+    VolumeListenerService();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAccessibility();
     });
   }
 
   @override
-  void dispose() {
-    _volumeService.dispose(); // if you added dispose()
-    super.dispose();
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkAccessibility();
+    }
+  }
+
+  Future<void> _checkAccessibility() async {
+    final enabled = await AccessibilityHelper.isAccessibilityEnabled();
+
+    if (!enabled) {
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Enable Panic Trigger"),
+            content: const Text(
+                "Silent Guardian requires Accessibility permission to detect the panic trigger."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  AccessibilityHelper.openAccessibilitySettings();
+                },
+                child: const Text("Enable"),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      setState(() {
+        _accessibilityEnabled = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-
       appBar: const AppHeader(),
-      //BODY
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-
             const SizedBox(height: 20),
-
             // ICON GRID
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -75,10 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 40),
-
-// 🔲 SECOND ROW (Panic + PIN same style)
+            // SECOND ROW (Panic + PIN)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -97,28 +131,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 _HomeIcon(
                   icon: Icons.lock,
                   label: 'App\nPIN Code',
-                  onTap: () {
-                    // PIN setup later
-                  },
+                  onTap: () {},
                 ),
               ],
             ),
-
-            const SizedBox(height : 40),
-
+            const SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _HomeIcon(
                   icon: Icons.phone,
                   label: 'Fake Call',
-                  onTap: (){
-
-                  },
+                  onTap: () {},
                 )
               ],
             )
-
           ],
         ),
       ),
