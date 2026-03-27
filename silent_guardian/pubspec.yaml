@@ -42,6 +42,7 @@ dependencies:
 
 
   volume_controller: ^3.4.1
+  android_intent_plus: ^6.0.0
 #  geolocator: ^10.1.0
 #  telephony: ^0.0.3+5
 #  shared_preferences: ^2.1.1

@@ -5,6 +5,7 @@ import 'emergency_message.dart';
 import 'silent_panic_trigger.dart';
 import 'package:silent_guardian/volume_listener_service.dart';
 import 'accessibility_helper.dart';
+import 'panic_listener.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +23,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     VolumeListenerService();
+
+    PanicListener.startListening(() {
+      print("🔥 PANIC RECEIVED IN FLUTTER");
+
+      // 👉 CALL YOUR REAL FUNCTION HERE
+    });
+
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAccessibility();
