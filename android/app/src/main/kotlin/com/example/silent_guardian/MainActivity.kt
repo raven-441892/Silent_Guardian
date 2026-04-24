@@ -1,0 +1,59 @@
+package com.example.silent_guardian
+
+import android.content.Intent
+import android.provider.Settings
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodChannel
+
+class MainActivity : FlutterActivity() {
+
+    private val ACCESSIBILITY_CHANNEL = "accessibility_channel"
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        // PANIC CHANNEL — sink stored statically so EmergencyPromptActivity can access it
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "panic_trigger_channel")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    EmergencyPromptActivity.eventSink = events
+                }
+                override fun onCancel(arguments: Any?) {
+                    EmergencyPromptActivity.eventSink = null
+                }
+            })
+
+        // ACCESSIBILITY CHANNEL
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ACCESSIBILITY_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+
+                    "openAccessibilitySettings" -> {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        result.success(true)
+                    }
+
+                    "isAccessibilityEnabled" -> {
+                        val expectedService =
+                            packageName + "/" + VolumeKeyAccessibilityService::class.java.name
+
+                        val enabledServices = Settings.Secure.getString(
+                            contentResolver,
+                            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                        )
+
+                        println("Enabled services: $enabledServices")
+
+                        val isEnabled = enabledServices?.contains(expectedService) == true
+                        result.success(isEnabled)
+                    }
+
+                    else -> result.notImplemented()
+                }
+            }
+    }
+}
