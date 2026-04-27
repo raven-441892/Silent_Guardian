@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:silent_guardian/responsive.dart';
 import 'sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -9,8 +10,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final logoSize = screenWidth * 0.1;
+    R.init(context);
+    final logoSize = (R.width * 0.1).clamp(32.0, 52.0);
+    final iconSize = (R.width * 0.07).clamp(22.0, 32.0);
+    final titleFontSize = (R.width * 0.042).clamp(14.0, 18.0);
 
     return AppBar(
       backgroundColor: Colors.blue,
@@ -19,19 +22,19 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Image.asset(
             'assets/images/silent_guardian_logo.png',
-            width: logoSize.clamp(32.0, 52.0),
-            height: logoSize.clamp(32.0, 52.0),
+            width: logoSize,
+            height: logoSize,
             fit: BoxFit.contain,
           ),
 
-          const SizedBox(width: 8),
-          const Flexible(
+          SizedBox(width: R.spacingSmall),
+          Flexible(
             child: Text(
               'Silent Guardian',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: titleFontSize,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -57,26 +60,33 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                       showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
-                          title: const Text('Account'),
+                          title: Text(
+                              'Account',
+                              style: TextStyle(fontSize: R.fontLarge),
+                          ),
                           content: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Hello',
-                                style: TextStyle(fontSize: 16),
+                                style: TextStyle(fontSize: R.fontMedium),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: R.spacingSmall),
                               Text(
                                 user.email ?? 'No email',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(fontWeight: FontWeight.bold,
+                                  fontSize: R.fontMedium),
                               ),
                             ],
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('Close'),
+                              child: Text(
+                                'Close',
+                                style: TextStyle(fontSize: R.fontMedium),
+                              ),
                             ),
                             TextButton(
                               onPressed: () async {
@@ -92,9 +102,12 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                                   );
                                 }
                               },
-                              child: const Text(
+                              child:Text(
                                 'Logout',
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: R.fontMedium,
+                                ),
                               ),
                             ),
                           ],
@@ -103,15 +116,15 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     }
                   },
                 child: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: EdgeInsets.all(R.spacingSmall * 0.6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.person,
                     color: Colors.white,
-                    size: 28,
+                    size: iconSize,
                   ),
                 ),
               );
@@ -121,7 +134,6 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);

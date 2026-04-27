@@ -12,14 +12,13 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-
 
     <application
         android:label="silent_guardian"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -47,6 +46,7 @@
             android:name=".FakeCallActivity"
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
+            android:screenOrientation="portrait"
             android:excludeFromRecents="true"/>
 
         <service

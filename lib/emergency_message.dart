@@ -80,8 +80,37 @@ class _EmergencyMessageScreenState
               const Text("Emergency Message",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
 
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  border: Border.all(color: Colors.orange.shade300),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 22),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "⚠ Include your name in the message!\n"
+                            "Alerts are sent from our app's email address, "
+                            "so the receiver will not know who you are unless "
+                            "you mention your name.",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
               TextField(
                 controller: _messageController,
                 maxLines: 5,

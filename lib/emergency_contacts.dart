@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:silent_guardian/responsive.dart';
 import 'header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -94,20 +95,24 @@ class _EmergencyContactsScreenState
 
   @override
   Widget build(BuildContext context) {
+    R.init(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(enableSignInNavigation: false),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: R.paddingHorizontal,
+            vertical: R.paddingVertical,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text("Emergency Contacts",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              Text("Emergency Contacts",
+                  style: TextStyle(fontSize: R.fontTitle, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center),
-              const SizedBox(height: 24),
+              SizedBox(height: R.spacingMedium),
 
               TextField(
                 controller: _phone1Controller,
@@ -115,14 +120,14 @@ class _EmergencyContactsScreenState
                 decoration: InputDecoration(
                   labelText: "Primary Phone Number *",
                   prefixIcon: const Icon(Icons.phone),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.radius)),
                   filled: true, fillColor: Colors.white,
                   errorText: _phone1Controller.text.isEmpty || _isPhone1Valid
                       ? null : "Enter valid phone number (7-15 digits)",
                 ),
                 onChanged: (value) => setState(() => _isPhone1Valid = _validatePhone(value)),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: R.spacingSmall),
 
               TextField(
                 controller: _phone2Controller,
@@ -130,7 +135,7 @@ class _EmergencyContactsScreenState
                 decoration: InputDecoration(
                   labelText: "Secondary Phone (Optional)",
                   prefixIcon: const Icon(Icons.phone),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.radius)),
                   filled: true, fillColor: Colors.white,
                   errorText: _phone2Controller.text.isEmpty || _isPhone2Valid
                       ? null : "Enter valid phone number",
@@ -138,7 +143,7 @@ class _EmergencyContactsScreenState
                 onChanged: (value) => setState(() =>
                 _isPhone2Valid = value.isEmpty ? true : _validatePhone(value)),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: R.spacingSmall),
 
               TextField(
                 controller: _email1Controller,
@@ -146,14 +151,14 @@ class _EmergencyContactsScreenState
                 decoration: InputDecoration(
                   labelText: "Primary Email *",
                   prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.radius)),
                   filled: true, fillColor: Colors.white,
                   errorText: _email1Controller.text.isEmpty || _isEmail1Valid
                       ? null : "Enter valid email",
                 ),
                 onChanged: (value) => setState(() => _isEmail1Valid = _validateEmail(value)),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: R.spacingSmall),
 
               TextField(
                 controller: _email2Controller,
@@ -161,7 +166,7 @@ class _EmergencyContactsScreenState
                 decoration: InputDecoration(
                   labelText: "Secondary Email (Optional)",
                   prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.radius)),
                   filled: true, fillColor: Colors.white,
                   errorText: _email2Controller.text.isEmpty || _isEmail2Valid
                       ? null : "Enter valid email",
@@ -169,21 +174,21 @@ class _EmergencyContactsScreenState
                 onChanged: (value) => setState(() =>
                 _isEmail2Valid = value.isEmpty ? true : _validateEmail(value)),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: R.spacingLarge),
 
               SizedBox(
-                height: 52,
+                height: R.buttonHeight,
                 child: ElevatedButton(
                   onPressed: _saveContacts,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.radius)),
                   ),
-                  child: const Text("Save Contacts",
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: Text("Save Contacts",
+                      style: TextStyle(fontSize: R.fontMedium, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: R.spacingSmall),
             ],
           ),
         ),

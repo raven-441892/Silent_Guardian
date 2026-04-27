@@ -1,11 +1,17 @@
 package com.example.silent_guardian
 
 import android.app.Activity
+import android.content.Context
+import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.VibratorManager
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -13,14 +19,22 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+
 class FakeCallActivity : Activity() {
 
     private var mediaPlayer: MediaPlayer? = null
 
+    private val Int.dp: Int
+        get() = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            this.toFloat(),
+            Resources.getSystem().displayMetrics
+        ).toInt()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         } else {
@@ -34,18 +48,14 @@ class FakeCallActivity : Activity() {
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 
-        //Play ringtone
         mediaPlayer = MediaPlayer.create(this, android.provider.Settings.System.DEFAULT_RINGTONE_URI)
         mediaPlayer?.isLooping = true
         mediaPlayer?.start()
 
+        startVibration()
+
         actionBar?.hide()
 
-        //Vibration
-//        vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
-//        vibrator?.vibrate(1000)
-
-        //ROOT LAYOUT
         val root = LinearLayout(this)
         root.orientation = LinearLayout.VERTICAL
         root.setBackgroundColor(Color.BLACK)
@@ -54,81 +64,87 @@ class FakeCallActivity : Activity() {
             LinearLayout.LayoutParams.MATCH_PARENT
         )
 
-        //TOP SECTION
         val topSection = LinearLayout(this)
         topSection.orientation = LinearLayout.VERTICAL
         topSection.gravity = Gravity.CENTER
+        topSection.setPadding(16.dp, 0, 16.dp, 0)
         topSection.layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
-            0,
-            1f
+            0, 1f
         )
 
         val incoming = TextView(this)
         incoming.text = "Incoming call..."
         incoming.setTextColor(Color.GRAY)
-        incoming.textSize = 18f
+        incoming.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
         incoming.gravity = Gravity.CENTER
+        val incomingParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        incomingParams.bottomMargin = 8.dp
+        incoming.layoutParams = incomingParams
 
         val caller = TextView(this)
         caller.text = "Mom"
         caller.setTextColor(Color.WHITE)
-        caller.textSize = 32f
+        caller.setTextSize(TypedValue.COMPLEX_UNIT_SP, 34f)
         caller.gravity = Gravity.CENTER
+        val callerParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        callerParams.bottomMargin = 8.dp
+        caller.layoutParams = callerParams
 
         val number = TextView(this)
         number.text = "+977 9841287965"
         number.setTextColor(Color.LTGRAY)
-        number.textSize = 20f
+        number.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
         number.gravity = Gravity.CENTER
+        number.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
 
         topSection.addView(incoming)
         topSection.addView(caller)
         topSection.addView(number)
 
-        //BOTTOM SECTION
         val bottomSection = LinearLayout(this)
         bottomSection.orientation = LinearLayout.HORIZONTAL
         bottomSection.gravity = Gravity.CENTER
+        bottomSection.setPadding(0, 0, 0, 32.dp)
         bottomSection.layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
-            0,
-            1f
+            0, 1f
         )
 
-        //DECLINE BUTTON
+        val btnSize = 72.dp
+
         val declineBtn = Button(this)
-        declineBtn.text =  "\uD83D\uDCDE"
+        declineBtn.text = "\uD83D\uDCDE"
         declineBtn.rotation = 135f
-        declineBtn.textSize = 36f
+        declineBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f)
         declineBtn.setTextColor(Color.WHITE)
-
-        // Create circular background
-        val circleDrawable = GradientDrawable()
-        circleDrawable.shape = GradientDrawable.OVAL // makes it circular
-        circleDrawable.setColor(Color.parseColor("#D32F2F")) // red color
-
-        declineBtn.background = circleDrawable
-
-        // Set size
-        val declineParams = LinearLayout.LayoutParams(135, 135)
-        declineParams.setMargins(100, 0, 100, 0)
+        declineBtn.background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.parseColor("#D32F2F"))
+        }
+        val declineParams = LinearLayout.LayoutParams(btnSize, btnSize)
+        declineParams.setMargins(24.dp, 0, 24.dp, 0)
         declineBtn.layoutParams = declineParams
 
-        //ACCEPT BUTTON
         val acceptBtn = Button(this)
         acceptBtn.text = "\uD83D\uDCDE"
-        acceptBtn.textSize = 36f
+        acceptBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f)
         acceptBtn.setTextColor(Color.WHITE)
-
-        val acceptDrawable = GradientDrawable()
-        acceptDrawable.shape = GradientDrawable.OVAL
-        acceptDrawable.setColor(Color.parseColor("#388E3C")) // green
-
-        acceptBtn.background = acceptDrawable
-
-        val acceptParams = LinearLayout.LayoutParams(135, 135)
-        acceptParams.setMargins(100, 0, 100, 0)
+        acceptBtn.background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.parseColor("#388E3C"))
+        }
+        val acceptParams = LinearLayout.LayoutParams(btnSize, btnSize)
+        acceptParams.setMargins(24.dp, 0, 24.dp, 0)
         acceptBtn.layoutParams = acceptParams
 
         bottomSection.addView(declineBtn)
@@ -139,19 +155,44 @@ class FakeCallActivity : Activity() {
 
         setContentView(root)
 
-        // 🎯 BUTTON ACTIONS
         acceptBtn.setOnClickListener {
             mediaPlayer?.stop()
+            stopVibration()
             showCallConnected()
         }
 
         declineBtn.setOnClickListener {
             mediaPlayer?.stop()
+            stopVibration()
             finish()
         }
     }
 
-    //AFTER ACCEPT
+    private fun getVibrator(): Vibrator {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vm.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+    }
+
+    private fun startVibration() {
+        val vibrator = getVibrator()
+        val pattern = longArrayOf(0, 500, 500)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(pattern, 0)
+        }
+    }
+
+    private fun stopVibration() {
+        getVibrator().cancel()
+    }
+
     private fun showCallConnected() {
         val layout = LinearLayout(this)
         layout.orientation = LinearLayout.VERTICAL
@@ -161,56 +202,22 @@ class FakeCallActivity : Activity() {
         val text = TextView(this)
         text.text = "Call Connected..."
         text.setTextColor(Color.GREEN)
-        text.textSize = 24f
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
 
         layout.addView(text)
         setContentView(layout)
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        stopVibration()
         mediaPlayer?.release()
+        super.onDestroy()
     }
 
-    // 🔊 Disable volume buttons during fake call (optional realism)
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
             keyCode == KeyEvent.KEYCODE_VOLUME_UP
-        ) {
-            true
-        } else {
-            super.onKeyDown(keyCode, event)
-        }
+        ) true
+        else super.onKeyDown(keyCode, event)
     }
 }
-//
-//    private fun showCallConnected() {
-//        val layout = LinearLayout(this)
-//        layout.orientation = LinearLayout.VERTICAL
-//        layout.setBackgroundColor(Color.BLACK)
-//        layout.gravity = Gravity.CENTER
-//
-//        val text = TextView(this)
-//        text.text = "Call Connected..."
-//        text.setTextColor(Color.GREEN)
-//        text.textSize = 24f
-//
-//        layout.addView(text)
-//        setContentView(layout)
-//    }
-//
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        mediaPlayer?.release()
-//    }
-
-//        val text = TextView(this)
-//        text.text = "Hello"
-//        text.setTextColor(Color.GREEN)
-//        text.textSize = 30f
-//        text.gravity = Gravity.CENTER
-//
-//        layout.addView(text)
-//
-//        setContentView(layout)
-

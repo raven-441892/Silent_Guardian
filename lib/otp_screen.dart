@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:silent_guardian/responsive.dart';
 import 'otp_email_service.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -91,8 +92,9 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Widget _otpBox(int index) {
+    final boxSize = (R.width - R.paddingHorizontal * 2) / 8;
     return SizedBox(
-      width: 44,
+      width: boxSize.clamp(36.0, 52.0),
       child: KeyboardListener(
         focusNode: FocusNode(),
         onKeyEvent: (event) {
@@ -111,10 +113,10 @@ class _OtpScreenState extends State<OtpScreen> {
           keyboardType: TextInputType.number,
           maxLength: 1,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: R.fontLarge, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             counterText: '',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(R.radius)),
           ),
           onChanged: (value) {
             if (value.isNotEmpty) {
@@ -139,69 +141,104 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    R.init(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colors.blue,
         elevation: 0,
-        title: const Text('OTP Verification',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('OTP Verification',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: R.fontLarge)),
         centerTitle: true,
         automaticallyImplyLeading: !_loading,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.symmetric(
+            horizontal: R.paddingHorizontal,
+            vertical: R.paddingVertical,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 30),
-              const Icon(Icons.lock_outline, size: 72, color: Colors.blue),
-              const SizedBox(height: 16),
+              SizedBox(height: R.spacingLarge),
+              Icon(
+                Icons.lock_outline,
+                size: (R.width * 0.18).clamp(56.0, 80.0),
+                color: Colors.blue,
+              ),
+
+              SizedBox(height: R.spacingMedium),
+
               Text(
                 'Enter the 6-digit OTP sent to\n${widget.email}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: R.fontMedium),
               ),
-              const SizedBox(height: 8),
-              const Text(
+
+              SizedBox(height: R.spacingSmall),
+
+              Text(
                 'Check your spam folder if not received.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: R.fontSmall,
+                  color: Colors.grey,
+                ),
               ),
-              const SizedBox(height: 30),
+
+              SizedBox(height: R.spacingLarge),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(6, _otpBox),
               ),
-              const SizedBox(height: 32),
+
+              SizedBox(height: R.spacingLarge),
+
               _loading
-                  ? const Column(children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 12),
-                Text('Verifying OTP...'),
+                  ? Column(children: [
+                const CircularProgressIndicator(),
+                SizedBox(height: R.spacingSmall),
+                Text(
+                  'Verifying OTP...',
+                  style: TextStyle(fontSize: R.fontMedium),
+                ),
               ])
                   : SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: R.buttonHeight,
                 child: ElevatedButton(
                   onPressed: _verifyOtp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(R.radius),
+                    ),
                   ),
-                  child: const Text('Verify OTP',
-                      style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: Text(
+                    'Verify OTP',
+                    style: TextStyle(
+                      fontSize: R.fontMedium,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+
+              SizedBox(height: R.spacingSmall),
+
               TextButton(
                 onPressed: _loading ? null : _resendOtp,
-                child: const Text('Resend OTP'),
+                child: Text(
+                  'Resend OTP',
+                  style: TextStyle(fontSize: R.fontMedium),
+                ),
               ),
-              const SizedBox(height: 16),
+
+              SizedBox(height: R.spacingMedium),
             ],
           ),
         ),

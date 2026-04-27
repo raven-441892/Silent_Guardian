@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:silent_guardian/fake_call_trigger.dart';
+import 'package:silent_guardian/responsive.dart';
 import 'header.dart';
 import 'emergency_contacts.dart';
 import 'emergency_message.dart';
 import 'silent_panic_trigger.dart';
-import 'package:silent_guardian/volume_listener_service.dart';
 import 'accessibility_helper.dart';
 import 'panic_listener.dart';
 import 'sms_service.dart';
@@ -36,12 +36,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _requestPermissionsSequentially();
-    VolumeListenerService();
 
     // Flutter-side panic listener (works when app is in foreground/background)
     PanicListener.startListening(() {
       debugPrint("PANIC RECEIVED IN FLUTTER");
-      triggerEmergency();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Emergency alert sent"),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
     });
 
     if (widget.showLoginSuccess) {
@@ -65,11 +72,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // ─── LOCATION ────────────────────────────────────────────────────────────────
-
   /// Saves location to SharedPreferences under keys Kotlin can also read.
-  /// Flutter's shared_preferences prefixes keys with "flutter." automatically,
-  /// so Kotlin reads them as "flutter.last_lat" / "flutter.last_lng".
   Future<void> _cacheLocation(double lat, double lng) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('last_lat', lat);
@@ -123,7 +126,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return _getCachedLocationString();
   }
 
-  // ─── PERMISSIONS ─────────────────────────────────────────────────────────────
 
   Future<void> _requestPermissionsSequentially() async {
     // Only ask if not already granted — never re-prompts on subsequent launches
@@ -136,8 +138,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // Warm up the location cache right after permissions confirmed
     await _getBestLocationString();
   }
-
-  // ─── EMERGENCY (Flutter-side, used when app is alive) ────────────────────────
 
   Future<void> triggerEmergency() async {
     if (_isSending) return;
@@ -216,8 +216,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  // ─── ACCESSIBILITY ───────────────────────────────────────────────────────────
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -248,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         content: const Text(
           "Silent Guardian requires Accessibility permission to detect "
               "the volume-button panic trigger. Tap Enable, turn it on, "
-              "then come back — you won't be asked again.",
+              "then come back",
         ),
         actions: [
           TextButton(
@@ -260,10 +258,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     ).then((_) => _accessibilityDialogShown = false);
   }
 
-  // ─── UI ──────────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
+    R.init(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(),
@@ -271,13 +268,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(R.paddingHorizontal),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 20),
+                    SizedBox(height: R.spacingMedium),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -295,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 40),
+                    SizedBox(height: R.spacingLarge),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -313,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: R.spacingMedium),
                   ],
                 ),
               ),
@@ -334,10 +331,11 @@ class _HomeIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.width * 0.35;
+    R.init(context);
+    final size = (R.width * 0.42).clamp(120.0, 200.0);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(R.radius),
       child: Column(
         children: [
           Container(
@@ -345,15 +343,15 @@ class _HomeIcon extends StatelessWidget {
             height: size * 0.7,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(R.radius),
               boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
             ),
             child: Icon(icon, size: size * 0.35, color: Colors.blue),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: R.spacingSmall),
           Text(label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13)),
+              style: TextStyle(fontSize: R.fontSmall)),
         ],
       ),
     );

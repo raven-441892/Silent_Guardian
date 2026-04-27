@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:silent_guardian/responsive.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'header.dart';
@@ -53,7 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _loading = true);
 
     try {
-      // === Check if email already exists in Firestore ===
+      //Check if email already exists in Firestore
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('email', isEqualTo: email)
@@ -68,10 +69,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             backgroundColor: Colors.orange,
           ),
         );
-        return;   // ← Stop here, no OTP sent
+        return;
       }
 
-      // Email is available → proceed with password validation
+      // Email is available then proceed with password validation
       if (!_isPasswordValid || !_isConfirmPasswordValid) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -172,20 +173,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    R.init(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(enableSignInNavigation: false),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.symmetric(
+            horizontal: R.paddingHorizontal,
+            vertical: R.paddingVertical,
+          ),
           child: Column(
             children: [
-              const SizedBox(height: 40),
-              const Text(
+              SizedBox(height: R.spacingLarge),
+              Text(
                 'Create your new account',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: R.fontTitle, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: R.spacingLarge),
 
               // Email
               TextField(
@@ -195,7 +200,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   labelText: 'Email',
                   prefixIcon: const Icon(Icons.email),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(R.radius)),
                   filled: true,
                   fillColor: Colors.white,
                   errorText: _emailController.text.isEmpty || _isEmailValid
@@ -205,7 +210,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onChanged: (v) =>
                     setState(() => _isEmailValid = _validateEmail(v)),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: R.spacingMedium),
 
               // Password
               TextField(
@@ -217,7 +222,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   labelText: 'Create Password',
                   prefixIcon: const Icon(Icons.lock),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(R.radius)),
                   filled: true,
                   fillColor:
                   _isEmailValid ? Colors.white : Colors.grey.shade200,
@@ -235,7 +240,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onChanged: (v) =>
                     setState(() => _isPasswordValid = _validatePassword(v)),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: R.spacingMedium),
 
               // Confirm Password
               TextField(
@@ -247,7 +252,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   labelText: 'Confirm Password',
                   prefixIcon: const Icon(Icons.lock),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(R.radius)),
                   filled: true,
                   fillColor: _isPasswordValid
                       ? Colors.white
@@ -268,31 +273,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         () => _isConfirmPasswordValid =
                         _validateConfirmPassword(v)),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: R.spacingMedium),
 
               _loading
                   ? const CircularProgressIndicator()
                   : SizedBox(
                 width: double.infinity,
-                height: 55,
+                height: R.buttonHeight,
                 child: ElevatedButton(
                   onPressed: _sendOtpAndNavigate,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2196F3),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(R.radius)),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Create New Account',
                     style: TextStyle(
-                        fontSize: 18,
+                        fontSize: R.fontMedium,
                         fontWeight: FontWeight.bold,
                         color: Colors.white),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 30),
+              SizedBox(height: R.spacingLarge),
             ],
           ),
         ),

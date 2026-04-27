@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:silent_guardian/responsive.dart';
 import 'header.dart';
 import 'home.dart';
 import 'sign_up.dart';
@@ -102,22 +103,27 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    R.init(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(enableSignInNavigation: false),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          padding: EdgeInsets.symmetric(
+            horizontal: R.paddingHorizontal,
+            vertical: R.paddingVertical,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Log In to your account',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: R.fontTitle, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: R.spacingLarge),
 
               TextField(
                 controller: _emailController,
@@ -125,7 +131,9 @@ class _SignInScreenState extends State<SignInScreen> {
                 decoration: InputDecoration(
                   labelText: 'Email',
                   prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(R.radius),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                   errorText: _emailController.text.isEmpty || _isEmailValid
@@ -136,7 +144,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   if (_isEmailValid) FocusScope.of(context).requestFocus(_passwordFocusNode);
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: R.spacingSmall),
 
               TextField(
                 controller: _passwordController,
@@ -146,74 +154,104 @@ class _SignInScreenState extends State<SignInScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   prefixIcon: const Icon(Icons.lock),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(R.radius),
+                  ),
                   filled: true,
-                  fillColor: _isEmailValid ? Colors.white : Colors.grey.shade200,
-                  errorText: _passwordController.text.isEmpty || _isPasswordValid
-                      ? null : 'Min 8 chars with letters, numbers & special character',
+                  fillColor: _isEmailValid ? Colors.white : Colors.grey
+                      .shade200,
+                  errorText: _passwordController.text.isEmpty ||
+                      _isPasswordValid
+                      ? null
+                      : 'Min 8 chars with letters, numbers & special character',
                   suffixIcon: IconButton(
-                    icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+                    icon: Icon(_passwordVisible ? Icons.visibility : Icons
+                        .visibility_off),
+                    onPressed: () =>
+                        setState(() => _passwordVisible = !_passwordVisible),
                   ),
                 ),
-                onChanged: (value) => setState(() => _isPasswordValid = _validatePassword(value)),
+                onChanged: (value) =>
+                    setState(() => _isPasswordValid = _validatePassword(value)),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: R.spacingMedium),
 
               SizedBox(
-                height: 52,
+                height: R.buttonHeight,
                 child: ElevatedButton(
                   onPressed: _loading ? null : _signIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2196F3),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(R.radius),
+                    ),
                   ),
                   child: _loading
                       ? const SizedBox(height: 22, width: 22,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Log In',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2))
+                      : Text('Log In',
+                      style: TextStyle(
+                        fontSize: R.fontMedium,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      )),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: R.spacingSmall),
 
               SizedBox(
-                height: 52,
+                height: R.buttonHeight,
                 child: ElevatedButton(
                   onPressed: () async {
                     final result = await Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const SignUpScreen()));
+                        MaterialPageRoute(
+                            builder: (context) => const SignUpScreen()));
                     if (result == true && mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Account created successfully 🎉'),
+                        content: Text('Account created successfully'),
                         backgroundColor: Colors.green,
                       ));
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2196F3),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(R.radius),
+                    ),
                   ),
-                  child: const Text('Create New Account',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: Text('Create New Account',
+                      style: TextStyle(
+                        fontSize: R.fontMedium,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      )),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: R.spacingSmall),
 
               SizedBox(
-                height: 52,
+                height: R.buttonHeight,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen())),
+                  onPressed: () =>
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(
+                              builder: (context) => const HomeScreen())),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2196F3),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(R.radius),
+                    ),
                   ),
-                  child: const Text('Log in as guest',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: Text('Log in as guest',
+                      style: TextStyle(
+                        fontSize: R.fontMedium,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      )),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: R.spacingMedium),
             ],
           ),
         ),
