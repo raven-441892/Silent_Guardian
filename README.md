@@ -46,6 +46,7 @@ Guest mode available (no account required)
 LayerTechnologyFrameworkFlutter (Dart)Native AndroidKotlinAuth & DatabaseFirebase Auth + Cloud FirestoreSMSAndroid SmsManager (native Kotlin) + Telephony pluginEmailJavaMail (android-mail) via Gmail SMTPLocationGeolocator + FusedLocationProviderClientPanic DetectionAndroid Accessibility Service (volume key interception)PreferencesSharedPreferences (Flutter + Kotlin, shared key space)
 
 ### Architecture
+~~~text
 silent_guardian/
 ├── lib/                        # Flutter (Dart) code
 │   ├── main.dart               # App entry point, Firebase init
@@ -72,7 +73,9 @@ silent_guardian/
 ├── EmergencyPromptActivity.kt  # 3-second confirmation screen
 ├── FakeCallActivity.kt         # Full-screen fake call UI
 └── AlertSender.kt              # Native SMS + email sender with GPS
+~~~
 
+~~~text
 ### How It Works
 Panic Detection Flow
 User presses Vol Up → Vol Down → Vol Up
@@ -90,7 +93,7 @@ Platform Channel Architecture
 
 EventChannel (panic_trigger_channel): Native → Flutter, fires "TRIGGER" on confirmed panic
 MethodChannel (accessibility_channel): Flutter → Native, checks/opens accessibility settings
-
+~~~
 
 ### Getting Started
 Prerequisites
