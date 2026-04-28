@@ -75,8 +75,8 @@ silent_guardian/
 └── AlertSender.kt              # Native SMS + email sender with GPS
 ~~~
 
-~~~text
 ### How It Works
+~~~text
 Panic Detection Flow
 User presses Vol Up → Vol Down → Vol Up
 ↓
@@ -105,14 +105,17 @@ Firebase project with Auth + Firestore enabled
 
 Setup
 
-Clone the repo
 
-bash   git clone https://github.com/your-username/silent-guardian.git
-cd silent-guardian
+Clone the repo
 
 Install dependencies
 
+~~~bash
+bash   git clone https://github.com/raven-441892/Silent_Guardian.git
+cd silent-guardian
+
 bash   flutter pub get
+~~~
 
 Firebase setup
 
@@ -133,12 +136,8 @@ On first launch, the app will prompt you to enable the Silent Guardian Accessibi
 Go to Settings → Accessibility → Silent Guardian and turn it on
 This is required for the panic and fake call triggers to work
 
-
-
-
 ## Permissions Required
 PermissionPurposeSEND_SMSSend emergency SMS alertsACCESS_FINE_LOCATIONAttach GPS coordinates to alertsACCESS_COARSE_LOCATIONFallback locationREAD_PHONE_STATEDevice telephony infoRECEIVE_SMSListen for SMS (telephony plugin)FOREGROUND_SERVICEKeep services runningMODIFY_AUDIO_SETTINGSVolume key interceptionACCESS_NOTIFICATION_POLICYDND mode awarenessVIBRATEFake call vibrationWAKE_LOCKWake screen on panic triggerBIND_ACCESSIBILITY_SERVICEVolume key detection
-
 
 ## Known Limitations
 
@@ -156,7 +155,10 @@ GNU GENERAL PUBLIC LICENSE
 
 ## Acknowledgements
 
-telephony plugin by Shounak Mulay
-geolocator for location services
-mailer for SMTP email
-Firebase for auth and database
+- telephony plugin by Shounak Mulay 
+
+- geolocator for location services
+
+- mailer for SMTP email
+
+- Firebase for auth and database
