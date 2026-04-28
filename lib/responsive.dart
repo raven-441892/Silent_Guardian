@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+// Responsive helper class
 class R {
   static late MediaQueryData _mq;
 
+  // Initialize with context
   static void init(BuildContext context) {
     _mq = MediaQuery.of(context);
   }
 
+  // Screen size
   static double get width => _mq.size.width;
   static double get height => _mq.size.height;
 

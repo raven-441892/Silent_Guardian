@@ -3,14 +3,17 @@ import 'package:silent_guardian/responsive.dart';
 import 'sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// Custom reusable app header
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
-  final bool enableSignInNavigation;
+  final bool enableSignInNavigation;    // Toggle sign-in navigation
 
   const AppHeader({super.key, this.enableSignInNavigation = true});
 
   @override
   Widget build(BuildContext context) {
-    R.init(context);
+    R.init(context);    // Initialize responsive values
+
+    // Responsive sizes
     final logoSize = (R.width * 0.1).clamp(32.0, 52.0);
     final iconSize = (R.width * 0.07).clamp(22.0, 32.0);
     final titleFontSize = (R.width * 0.042).clamp(14.0, 18.0);
@@ -20,6 +23,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       title: Row(
         children: [
+          // App logo
           Image.asset(
             'assets/images/silent_guardian_logo.png',
             width: logoSize,
@@ -28,6 +32,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           ),
 
           SizedBox(width: R.spacingSmall),
+
+          // App title
           Flexible(
             child: Text(
               'Silent Guardian',
@@ -40,6 +46,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           const Spacer(),
+
+          // Profile icon with tap action
           Builder(
             builder: (context) {
               return InkWell(
@@ -68,11 +76,15 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+
+                              //Greeting text
                               Text(
                                 'Hello',
                                 style: TextStyle(fontSize: R.fontMedium),
                               ),
                               SizedBox(height: R.spacingSmall),
+
+                              // Show user email
                               Text(
                                 user.email ?? 'No email',
                                 style: TextStyle(fontWeight: FontWeight.bold,
@@ -81,6 +93,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                             ],
                           ),
                           actions: [
+                            // Close dialog
                             TextButton(
                               onPressed: () => Navigator.pop(context),
                               child: Text(
@@ -88,10 +101,13 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                                 style: TextStyle(fontSize: R.fontMedium),
                               ),
                             ),
+
+                            // Logout button
                             TextButton(
                               onPressed: () async {
                                 await FirebaseAuth.instance.signOut();
 
+                                // Navigate to sign-in after logout
                                 if (context.mounted) {
                                   Navigator.pushAndRemoveUntil(
                                     context,
@@ -115,6 +131,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                       );
                     }
                   },
+
+                // Profile icon UI
                 child: Container(
                   padding: EdgeInsets.all(R.spacingSmall * 0.6),
                   decoration: BoxDecoration(
@@ -135,6 +153,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  // AppBar height
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

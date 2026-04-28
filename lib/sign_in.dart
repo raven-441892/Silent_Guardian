@@ -5,6 +5,7 @@ import 'home.dart';
 import 'sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+//Widget screen for log in
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -13,27 +14,34 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  // Controllers for user input
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // Focus control for password field
   final FocusNode _passwordFocusNode = FocusNode();
 
+  // Validation and UI state flags
   bool _isEmailValid = false;
   bool _isPasswordValid = false;
   bool _passwordVisible = false;
   bool _loading = false;
 
+  // Email validation using regex
   bool _validateEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
+  // Password validation (min 8 chars, letters, number, special char)
   bool _validatePassword(String password) {
     return RegExp(
         r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>_]).{8,}$')
         .hasMatch(password);
   }
 
+  // Handles Firebase login
   Future<void> _signIn() async {
+    // Prevent login if inputs are invalid
     if (!_isEmailValid || !_isPasswordValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -47,15 +55,15 @@ class _SignInScreenState extends State<SignInScreen> {
     setState(() => _loading = true);
 
     try {
+      // Firebase authentication request
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
       if (!mounted) return;
-      // FIXED: Removed emailVerified check — OTP already verified the user's email.
-      // Forcing emailVerified would lock out all users since we don't send
-      // Firebase's own verification email anymore.
+
+      // Navigate to Home on success
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -64,6 +72,8 @@ class _SignInScreenState extends State<SignInScreen> {
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
+
+      // Handle login errors
       String message;
       switch (e.code) {
         case 'user-not-found':
@@ -89,12 +99,14 @@ class _SignInScreenState extends State<SignInScreen> {
         SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } finally {
+      // Stop loading indicator
       if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   void dispose() {
+    // Clean up controllers and focus nodes
     _emailController.dispose();
     _passwordController.dispose();
     _passwordFocusNode.dispose();
@@ -104,10 +116,13 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     R.init(context);
+
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(enableSignInNavigation: false),
       resizeToAvoidBottomInset: true,
+
+      // Scrollable layout for smaller screens
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
@@ -117,14 +132,18 @@ class _SignInScreenState extends State<SignInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+
+              // Title
               Text(
                 'Log In to your account',
                 style: TextStyle(
                     fontSize: R.fontTitle, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
+
               SizedBox(height: R.spacingLarge),
 
+              // Email input field
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -141,11 +160,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 onChanged: (value) {
                   setState(() => _isEmailValid = _validateEmail(value));
-                  if (_isEmailValid) FocusScope.of(context).requestFocus(_passwordFocusNode);
                 },
               ),
               SizedBox(height: R.spacingSmall),
 
+              // Password input field
               TextField(
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
@@ -164,8 +183,12 @@ class _SignInScreenState extends State<SignInScreen> {
                       _isPasswordValid
                       ? null
                       : 'Min 8 chars with letters, numbers & special character',
+
+                  // Toggle password visibility
                   suffixIcon: IconButton(
-                    icon: Icon(_passwordVisible ? Icons.visibility : Icons
+                    icon: Icon(_passwordVisible
+                        ? Icons.visibility
+                        : Icons
                         .visibility_off),
                     onPressed: () =>
                         setState(() => _passwordVisible = !_passwordVisible),
@@ -174,8 +197,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 onChanged: (value) =>
                     setState(() => _isPasswordValid = _validatePassword(value)),
               ),
+
               SizedBox(height: R.spacingMedium),
 
+              // Login button
               SizedBox(
                 height: R.buttonHeight,
                 child: ElevatedButton(
@@ -198,8 +223,10 @@ class _SignInScreenState extends State<SignInScreen> {
                       )),
                 ),
               ),
+
               SizedBox(height: R.spacingSmall),
 
+              // Navigate to Sign Up
               SizedBox(
                 height: R.buttonHeight,
                 child: ElevatedButton(
@@ -207,6 +234,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     final result = await Navigator.push(context,
                         MaterialPageRoute(
                             builder: (context) => const SignUpScreen()));
+
                     if (result == true && mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text('Account created successfully'),
@@ -228,8 +256,10 @@ class _SignInScreenState extends State<SignInScreen> {
                       )),
                 ),
               ),
+
               SizedBox(height: R.spacingSmall),
 
+              // Guest login option
               SizedBox(
                 height: R.buttonHeight,
                 child: ElevatedButton(
@@ -251,6 +281,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       )),
                 ),
               ),
+
               SizedBox(height: R.spacingMedium),
             ],
           ),

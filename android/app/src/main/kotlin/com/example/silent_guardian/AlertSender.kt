@@ -23,12 +23,16 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 import kotlin.coroutines.resume
 
+// Singleton responsible for sending emergency SMS and email alerts with location
 object AlertSender {
 
     private const val TAG = "AlertSender"
+
+    // Gmail credentials used as the sender for all emergency emails
     private const val SENDER_EMAIL = "silentguardian82@gmail.com"
     private const val SENDER_PASSWORD = "ddrb ejja cbix huck"
 
+    // Entry point: reads saved contacts from SharedPreferences and dispatches alerts
     fun sendAlert(context: Context) {
         val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
 
@@ -38,10 +42,11 @@ object AlertSender {
         val email2  = prefs.getString("flutter.email2", "") ?: ""
         val message = prefs.getString("flutter.emergency_message", "Help! I am in danger!") ?: "Help! I am in danger!"
 
-        // Flutter stores doubles as Strings — read as String, parse to Double
+        // Flutter stores doubles as Strings: read as String, parse to Double
         val cachedLat = prefs.getString("flutter.last_lat", null)?.toDoubleOrNull()
         val cachedLng = prefs.getString("flutter.last_lng", null)?.toDoubleOrNull()
 
+        // Filter out empty entries to get a clean list of recipients
         val phones = listOf(phone1, phone2).filter { it.isNotEmpty() }
         val emails = listOf(email1, email2).filter { it.isNotEmpty() }
 
@@ -50,17 +55,22 @@ object AlertSender {
             return
         }
 
+        // Run network/IO operations off the main thread
         CoroutineScope(Dispatchers.IO).launch {
+
+            // Try fresh GPS; fall back to cached coordinates if unavailable
             val locationString = getFreshLocation(context)
                 ?: if (cachedLat != null && cachedLng != null)
                     "https://maps.google.com/?q=$cachedLat,$cachedLng"
                 else null
 
+            // Append Google Maps link to the message if location is available
             val fullMessage = if (locationString != null)
                 "$message\n\nMy location: $locationString"
             else
                 message
 
+            // Send SMS to each phone number
             for (phone in phones) {
                 try {
                     sendSms(context, phone, fullMessage)
@@ -70,6 +80,7 @@ object AlertSender {
                 }
             }
 
+            // Send email to each address
             for (email in emails) {
                 try {
                     sendEmail(email, fullMessage)
@@ -81,6 +92,7 @@ object AlertSender {
         }
     }
 
+    // Attempts to get a fresh GPS fix within 4 seconds; updates the cache on success
     private suspend fun getFreshLocation(context: Context): String? {
         return try {
             withTimeout(4_000L) {
@@ -115,6 +127,7 @@ object AlertSender {
         }
     }
 
+    // Sends an SMS, splitting into multipart if the message exceeds one segment
     private fun sendSms(context: Context, phone: String, message: String) {
         val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(SmsManager::class.java)
@@ -130,6 +143,7 @@ object AlertSender {
         }
     }
 
+    // Sends an email via Gmail SMTP using STARTTLS on port 587
     private fun sendEmail(recipient: String, messageText: String) {
         val props = Properties().apply {
             put("mail.smtp.auth", "true")

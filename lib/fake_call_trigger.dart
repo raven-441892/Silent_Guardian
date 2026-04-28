@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:silent_guardian/responsive.dart';
 import 'header.dart';
 
+// Screen showing fake call trigger instructions
 class FakeCallTriggerScreen extends StatelessWidget {
   const FakeCallTriggerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    R.init(context);
+    R.init(context);    // Initialize responsive sizing
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(enableSignInNavigation: false),
 
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(R.paddingHorizontal),
+          padding: EdgeInsets.all(R.paddingHorizontal),   // Responsive padding
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Title
               Text(
                 "Fake Call Trigger",
                 style: TextStyle(
@@ -28,6 +30,7 @@ class FakeCallTriggerScreen extends StatelessWidget {
 
               SizedBox(height: R.spacingLarge),
 
+              // Instruction text
               Text(
                 "To trigger a fake call, press the following buttons in order:",
                 textAlign: TextAlign.center,
@@ -36,10 +39,12 @@ class FakeCallTriggerScreen extends StatelessWidget {
 
               SizedBox(height: R.spacingLarge),
 
+              // Button sequence steps
               Text(
-                "1. Volume Down \n"
-                    "2. Volume Up \n"
-                    "3. Volume Down ",
+                "1. Power Button \n"
+                    "2. Volume Down \n"
+                    "3. Volume Up \n"
+                    "4. Volume Down ",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: R.fontLarge,

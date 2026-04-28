@@ -3,6 +3,7 @@ import 'package:silent_guardian/responsive.dart';
 import 'header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Screen for saving up to two emergency phone numbers and email addresses
 class EmergencyContactsScreen extends StatefulWidget {
   const EmergencyContactsScreen({super.key});
 
@@ -16,7 +17,7 @@ class _EmergencyContactsScreenState
       @override
       void initState() {
         super.initState();
-        _loadContacts();
+        _loadContacts();    // Pre-fill fields from saved preferences on open
       }
 
     final TextEditingController _phone1Controller = TextEditingController();
@@ -24,21 +25,25 @@ class _EmergencyContactsScreenState
     final TextEditingController _email1Controller = TextEditingController();
     final TextEditingController _email2Controller = TextEditingController();
 
+    // Validation state; secondary fields are optional so they default to valid
     bool _isPhone1Valid = false;
     bool _isPhone2Valid = true; // optional
     bool _isEmail1Valid = false;
     bool _isEmail2Valid = true; // optional
 
+      // Accepts 7–15 digit phone numbers (no country-code formatting enforced)
     bool _validatePhone(String value) {
       return RegExp(r'^[0-9]{7,15}$').hasMatch(value);
     }
 
+      // Basic email format check
     bool _validateEmail(String value) {
       return RegExp(
         r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
       ).hasMatch(value);
     }
 
+      // Loads previously saved contacts from SharedPreferences and re-validates them
   Future<void> _loadContacts() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -49,6 +54,8 @@ class _EmergencyContactsScreenState
       _email2Controller.text = prefs.getString('email2') ?? '';
 
       _isPhone1Valid = _validatePhone(_phone1Controller.text);
+
+      // Optional field is valid if empty or passes format check
       _isPhone2Valid = _phone2Controller.text.isEmpty ||
           _validatePhone(_phone2Controller.text);
 
@@ -58,6 +65,7 @@ class _EmergencyContactsScreenState
     });
   }
 
+  // Persists contacts only when all required fields pass validation
   Future<void> _saveContacts() async {
     if (_isPhone1Valid && _isEmail1Valid && _isPhone2Valid && _isEmail2Valid) {
 
@@ -86,6 +94,7 @@ class _EmergencyContactsScreenState
 
   @override
   void dispose() {
+    // Release all text controllers to prevent memory leaks
     _phone1Controller.dispose();
     _phone2Controller.dispose();
     _email1Controller.dispose();
@@ -114,6 +123,7 @@ class _EmergencyContactsScreenState
                   textAlign: TextAlign.center),
               SizedBox(height: R.spacingMedium),
 
+              // Primary phone — required
               TextField(
                 controller: _phone1Controller,
                 keyboardType: TextInputType.phone,
@@ -129,6 +139,7 @@ class _EmergencyContactsScreenState
               ),
               SizedBox(height: R.spacingSmall),
 
+              // Secondary phone — optional
               TextField(
                 controller: _phone2Controller,
                 keyboardType: TextInputType.phone,
@@ -145,6 +156,7 @@ class _EmergencyContactsScreenState
               ),
               SizedBox(height: R.spacingSmall),
 
+              //Primary email — required
               TextField(
                 controller: _email1Controller,
                 keyboardType: TextInputType.emailAddress,
@@ -160,6 +172,7 @@ class _EmergencyContactsScreenState
               ),
               SizedBox(height: R.spacingSmall),
 
+              //Secondary email — optional
               TextField(
                 controller: _email2Controller,
                 keyboardType: TextInputType.emailAddress,

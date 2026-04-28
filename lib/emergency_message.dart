@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//Message screen widget to add emergency message which gets sent during panic trigger
 class EmergencyMessageScreen extends StatefulWidget {
   const EmergencyMessageScreen({super.key});
 
@@ -10,20 +11,20 @@ class EmergencyMessageScreen extends StatefulWidget {
       _EmergencyMessageScreenState();
 }
 
-class _EmergencyMessageScreenState
-    extends State<EmergencyMessageScreen> {
+class _EmergencyMessageScreenState extends State<EmergencyMessageScreen> {
+  // Controller for text input
+    final TextEditingController _messageController = TextEditingController();
 
-      final TextEditingController _messageController =
-  TextEditingController();
-
-  bool _isMessageValid = false;
+      // Tracks if message is valid (not empty)
+    bool _isMessageValid = false;
 
   @override
   void initState() {
     super.initState();
-    _loadMessage();
+    _loadMessage();   // Load saved message on start
   }
 
+    // Load message from local storage
       Future<void> _loadMessage() async {
         final prefs = await SharedPreferences.getInstance();
 
@@ -35,6 +36,7 @@ class _EmergencyMessageScreenState
         });
       }
 
+    // Save message to local storage
       Future<void> _saveMessage() async {
         if (_isMessageValid) {
 
@@ -43,6 +45,7 @@ class _EmergencyMessageScreenState
           await prefs.setString(
               'emergency_message', _messageController.text);
 
+          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Emergency message saved"),
@@ -50,6 +53,7 @@ class _EmergencyMessageScreenState
             ),
           );
         } else {
+          //Show error if empty
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Message cannot be empty"),
@@ -61,7 +65,7 @@ class _EmergencyMessageScreenState
 
   @override
   void dispose() {
-    _messageController.dispose();
+    _messageController.dispose();   // Clean up controller
     super.dispose();
   }
 
@@ -77,11 +81,13 @@ class _EmergencyMessageScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Title
               const Text("Emergency Message",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center),
               const SizedBox(height: 12),
 
+              // Warning box
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -111,6 +117,8 @@ class _EmergencyMessageScreenState
                 ),
               ),
               const SizedBox(height: 24),
+
+              // Message input field
               TextField(
                 controller: _messageController,
                 maxLines: 5,
@@ -126,15 +134,22 @@ class _EmergencyMessageScreenState
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.white,
+
+                  // Show error if invalid
                   errorText: _messageController.text.isEmpty || _isMessageValid
                       ? null : "Message cannot be empty",
+
+                  // Character counter
                   counterText: "${_messageController.text.length}/160",
                 ),
+
+                // Validate on change
                 onChanged: (value) =>
                     setState(() => _isMessageValid = value.trim().isNotEmpty),
               ),
               const SizedBox(height: 20),
 
+              // Save button
               SizedBox(
                 height: 52,
                 child: ElevatedButton(

@@ -14,6 +14,7 @@ import 'email_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// Main home screen
 class HomeScreen extends StatefulWidget {
   final bool showLoginSuccess;
 
@@ -25,17 +26,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
+  // Services
   final SmsService smsService = SmsService();
   final EmergencyService emergencyService = EmergencyService();
+
   bool _accessibilityEnabled = false;
   bool _accessibilityDialogShown = false;
-  bool _isSending = false;
+  bool _isSending = false;    // Prevent duplicate triggers
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _requestPermissionsSequentially();
+
+    _requestPermissionsSequentially();    // Ask permissions
 
     // Flutter-side panic listener (works when app is in foreground/background)
     PanicListener.startListening(() {
@@ -51,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     });
 
+    // Show login success message
     if (widget.showLoginSuccess) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -63,12 +68,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
     }
 
+    // Check accessibility after UI loads
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkAccessibility());
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);   // Remove observer
     super.dispose();
   }
 
@@ -80,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     debugPrint("Location cached: $lat, $lng");
   }
 
+  /// Get cached location as Google Maps link
   Future<String?> _getCachedLocationString() async {
     final prefs = await SharedPreferences.getInstance();
     final lat = prefs.getDouble('last_lat');
@@ -109,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           debugPrint("Live GPS timed out, trying last known…");
         }
 
-        // 2. OS last-known fix (instant)
+        // 2. Try last known location
         try {
           final last = await Geolocator.getLastKnownPosition();
           if (last != null) {
@@ -122,11 +129,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       debugPrint("Location check failed: $e");
     }
 
-    // 3. Whatever we cached last time the app had a fix
+    //3. Fallback to cached
     return _getCachedLocationString();
   }
 
-
+  /// Request SMS + location permissions once
   Future<void> _requestPermissionsSequentially() async {
     // Only ask if not already granted — never re-prompts on subsequent launches
     if (!await Permission.sms.isGranted) {
@@ -139,6 +146,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await _getBestLocationString();
   }
 
+  /// Send emergency alerts (SMS + Email)
   Future<void> triggerEmergency() async {
     if (_isSending) return;
     _isSending = true;
@@ -149,6 +157,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final message = await emergencyService.getMessage();
       final locationString = await _getBestLocationString();
 
+      // Append location to message
       final String fullMessage = locationString != null
           ? '$message\n\nMy location: $locationString'
           : message;
@@ -159,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       bool smsSent = false;
       bool emailSent = false;
 
+      // No contacts fallback
       if (phones.isEmpty && email1.isEmpty && email2.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -172,6 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         return;
       }
 
+      // Send SMS
       for (final phone in phones) {
         try {
           await smsService.sendSMS(phone, fullMessage);
@@ -181,6 +192,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
       }
 
+      // Send Emails
       if (email1.isNotEmpty) {
         try {
           await emailService.sendEmail(email1, fullMessage);
@@ -199,6 +211,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
       }
 
+      // Show result
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -216,6 +229,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Listen for app resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -223,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Check accessibility permission
   Future<void> _checkAccessibility() async {
     final enabled = await AccessibilityHelper.isAccessibilityEnabled();
 
@@ -238,6 +253,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (_accessibilityDialogShown || !mounted) return;
     _accessibilityDialogShown = true;
 
+    // Show enable dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -261,20 +277,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     R.init(context);
+
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(),
+
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               padding: EdgeInsets.all(R.paddingHorizontal),
+
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(height: R.spacingMedium),
+
+                    //Top Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -293,6 +314,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ],
                     ),
                     SizedBox(height: R.spacingLarge),
+
+                    // Bottom row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -322,6 +345,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 }
 
+// Reusable home grid icon
 class _HomeIcon extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -333,11 +357,15 @@ class _HomeIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     R.init(context);
     final size = (R.width * 0.42).clamp(120.0, 200.0);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(R.radius),
+
       child: Column(
         children: [
+
+          // Icon container
           Container(
             width: size,
             height: size * 0.7,
@@ -348,7 +376,10 @@ class _HomeIcon extends StatelessWidget {
             ),
             child: Icon(icon, size: size * 0.35, color: Colors.blue),
           ),
+
           SizedBox(height: R.spacingSmall),
+
+          //Label
           Text(label,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: R.fontSmall)),

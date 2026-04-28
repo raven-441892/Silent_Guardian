@@ -7,6 +7,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
+// Main entry point — bridges Flutter and native Android via platform channels
 class MainActivity : FlutterActivity() {
 
     private val ACCESSIBILITY_CHANNEL = "accessibility_channel"
@@ -14,7 +15,8 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        // PANIC CHANNEL — sink stored statically so EmergencyPromptActivity can access it
+        // EventChannel so Flutter can receive "TRIGGER" events when a panic is confirmed.
+        // The sink is stored statically so EmergencyPromptActivity can post to it.
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "panic_trigger_channel")
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
@@ -25,11 +27,12 @@ class MainActivity : FlutterActivity() {
                 }
             })
 
-        // ACCESSIBILITY CHANNEL
+        // MethodChannel for accessibility-related queries from Flutter
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ACCESSIBILITY_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
 
+                    //Opens the system Accessibility Settings screen
                     "openAccessibilitySettings" -> {
                         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -37,6 +40,7 @@ class MainActivity : FlutterActivity() {
                         result.success(true)
                     }
 
+                    // Checks whether VolumeKeyAccessibilityService is enabled
                     "isAccessibilityEnabled" -> {
                         val expectedService =
                             packageName + "/" + VolumeKeyAccessibilityService::class.java.name
@@ -55,5 +59,5 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
-    }
+        }
 }

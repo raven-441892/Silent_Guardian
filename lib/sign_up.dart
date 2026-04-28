@@ -15,31 +15,41 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  // Input controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  // Focus control for form navigation
   final _passwordFocusNode = FocusNode();
   final _confirmPasswordFocusNode = FocusNode();
 
+  // Validation & UI state
   bool _isEmailValid = false;
   bool _isPasswordValid = false;
   bool _isConfirmPasswordValid = false;
   bool _loading = false;
+
+  // Password visibility toggles
   bool _passwordVisible = false;
   bool _confirmPasswordVisible = false;
 
+  // Email validation (regex)
   bool _validateEmail(String v) =>
       RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v);
 
+  // Password validation (min 8 chars, letters, number, special char)
   bool _validatePassword(String v) =>
       RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>_]).{8,}$')
           .hasMatch(v);
 
+  // Confirm password match check
   bool _validateConfirmPassword(String v) => v == _passwordController.text;
 
+  // Generate 6-digit OTP
   String _generateOtp() => (Random().nextInt(900000) + 100000).toString();
 
+  // Sends OTP after validation and email uniqueness check
   Future<void> _sendOtpAndNavigate() async {
     if (!_isEmailValid) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -82,7 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return;
       }
 
-      // Now send OTP
+      // Generate and send OTP via email service
       final otp = _generateOtp();
       final sent = await OtpEmailService.sendOtp(email, otp);
 
@@ -97,6 +107,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if (!mounted) return;
 
+      // Navigate to OTP verification screen
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -107,10 +118,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
       );
+
+      // Return success to previous screen if verified
       if (result == true && mounted) {
         Navigator.pop(context, true);
       }
     } catch (e) {
+      // Handle unexpected errors
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red),
@@ -119,10 +133,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) setState(() => _loading = false);
     }
   }
-  /// Creates the Firebase account. Returns true on success, false on failure.
-  /// Does NOT call Navigator.pop — OtpScreen handles navigation.
-  /// Creates the Firebase account. Returns true on success, false on failure.
-  /// Creates account in background and shows success message on Sign In screen
+
+  // Creates Firebase user + Firestore record
   Future<void> _createAccount(String email) async {
     try {
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -130,6 +142,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: _passwordController.text.trim(),
       );
 
+      // Store user data in Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(credential.user!.uid)
@@ -139,7 +152,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'isActive': true,
       });
     } on FirebaseAuthException catch (e) {
+
+      // Handle Firebase auth errors
       String message = 'Account creation failed';
+
       if (e.code == 'email-already-in-use') {
         message = 'This email is already registered. Please sign in.';
       } else if (e.code == 'weak-password') {
@@ -152,6 +168,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } catch (e) {
+      // Generic fallback error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Unexpected error. Please try again.'),
@@ -163,6 +180,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
+    // Clean up controllers & focus nodes
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -174,9 +192,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     R.init(context);
+
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: const AppHeader(enableSignInNavigation: false),
+
+      // Scrollable form layout
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -186,13 +207,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: Column(
             children: [
               SizedBox(height: R.spacingLarge),
+
+              // Screen title
               Text(
                 'Create your new account',
                 style: TextStyle(fontSize: R.fontTitle, fontWeight: FontWeight.bold),
               ),
+
               SizedBox(height: R.spacingLarge),
 
-              // Email
+              // Email input
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -210,9 +234,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onChanged: (v) =>
                     setState(() => _isEmailValid = _validateEmail(v)),
               ),
+
               SizedBox(height: R.spacingMedium),
 
-              // Password
+              // Password input
               TextField(
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
@@ -229,6 +254,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   errorText: _passwordController.text.isEmpty || _isPasswordValid
                       ? null
                       : 'Min 8 chars with letters, numbers & special char',
+
+                  // Toggle visibility
                   suffixIcon: IconButton(
                     icon: Icon(_passwordVisible
                         ? Icons.visibility
@@ -242,7 +269,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               SizedBox(height: R.spacingMedium),
 
-              // Confirm Password
+              // Confirm Password input
               TextField(
                 controller: _confirmPasswordController,
                 focusNode: _confirmPasswordFocusNode,
@@ -261,6 +288,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       _isConfirmPasswordValid
                       ? null
                       : 'Passwords do not match',
+
+                  // Toggle confirm visibility
                   suffixIcon: IconButton(
                     icon: Icon(_confirmPasswordVisible
                         ? Icons.visibility
@@ -273,8 +302,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         () => _isConfirmPasswordValid =
                         _validateConfirmPassword(v)),
               ),
+
               SizedBox(height: R.spacingMedium),
 
+              // Submit button / loading state
               _loading
                   ? const CircularProgressIndicator()
                   : SizedBox(

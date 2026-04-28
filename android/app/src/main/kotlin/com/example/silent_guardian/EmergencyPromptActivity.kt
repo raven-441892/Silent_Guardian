@@ -17,9 +17,12 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import io.flutter.plugin.common.EventChannel
 
+// Full-screen activity shown after panic sequence is detected.
+// Gives the user 3 seconds to cancel before auto-sending the alert.
 class EmergencyPromptActivity : Activity() {
 
     companion object {
+        // Shared EventSink so MainActivity can pass Flutter events from this activity
         var eventSink: EventChannel.EventSink? = null
     }
 
@@ -27,8 +30,11 @@ class EmergencyPromptActivity : Activity() {
     private lateinit var timerText: TextView
     private var handler = Handler(Looper.getMainLooper())
     private lateinit var runnable: Runnable
+
+    // Guards against double-triggering if YES is tapped while timer fires
     private var alreadyTriggered = false
 
+    // Converts dp units to pixels using display metrics
     private val Int.dp: Int
         get() = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
@@ -39,6 +45,7 @@ class EmergencyPromptActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Root vertical layout with white background
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.WHITE)
@@ -48,6 +55,7 @@ class EmergencyPromptActivity : Activity() {
             )
         }
 
+        // Blue header bar
         val header = TextView(this).apply {
             text = "Confirm Emergency"
             setBackgroundColor(Color.parseColor("#2196F3"))
@@ -63,6 +71,7 @@ class EmergencyPromptActivity : Activity() {
         }
         root.addView(header)
 
+        //Centered content area (takes remaining space with weight 1)
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -85,6 +94,7 @@ class EmergencyPromptActivity : Activity() {
             ).also { it.bottomMargin = 12.dp }
         }
 
+        //Countdown label — updated every second by the timer runnable
         timerText = TextView(this).apply {
             text = "Auto triggering in $secondsLeft seconds..."
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
@@ -96,11 +106,13 @@ class EmergencyPromptActivity : Activity() {
             ).also { it.bottomMargin = 32.dp }
         }
 
+        //Helper to produce consistent full-width button layout params
         fun buttonParams() = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             52.dp
         ).also { it.bottomMargin = 12.dp }
 
+        // Red button — immediately fires the emergency without waiting for the timer
         val yesBtn = Button(this).apply {
             text = "YES — TRIGGER NOW"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
@@ -111,6 +123,7 @@ class EmergencyPromptActivity : Activity() {
             setOnClickListener { triggerEmergency() }
         }
 
+        // Grey button — cancels the countdown and closes the activity
         val noBtn = Button(this).apply {
             text = "NO — CANCEL"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
@@ -135,6 +148,7 @@ class EmergencyPromptActivity : Activity() {
         startTimer()
     }
 
+    // Ticks down every second; triggers emergency automatically when it reaches 0
     private fun startTimer() {
         runnable = object : Runnable {
             override fun run() {
@@ -150,13 +164,14 @@ class EmergencyPromptActivity : Activity() {
         handler.postDelayed(runnable, 1000)
     }
 
+    // Sends the alert, notifies Flutter via EventSink, then returns to MainActivity
     private fun triggerEmergency() {
         if (alreadyTriggered) return
         alreadyTriggered = true
         handler.removeCallbacks(runnable)
 
         AlertSender.sendAlert(applicationContext)
-        eventSink?.success("TRIGGER")
+        eventSink?.success("TRIGGER")       //Notifies the flutter side
 
         val intent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -166,6 +181,7 @@ class EmergencyPromptActivity : Activity() {
     }
 
     override fun onDestroy() {
+        //Clean up pending callbacks to avoid memory leaks
         handler.removeCallbacksAndMessages(null)
         super.onDestroy()
     }
